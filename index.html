@@ -3,57 +3,30 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Dashboard de Mídia Paga</title>
+  <title>Controle de Mídia</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <header class="topo">
     <div>
-      <h1>Mídia paga · Metas do mês</h1>
-      <p class="sub" id="periodo">Carregando dados…</p>
+      <h1>Controle de mídia · clientes</h1>
+      <p class="sub" id="origem">Carregando…</p>
     </div>
-    <div class="filtros">
-      <label>Mês
-        <select id="filtro-mes"></select>
-      </label>
-      <div class="segmentado" id="filtro-plataforma" role="group" aria-label="Plataforma"></div>
+    <div class="acoes">
       <label class="botao">
-        Carregar CSV
-        <input type="file" id="arquivo-csv" accept=".csv" hidden>
+        Abrir planilha (.xlsx)
+        <input type="file" id="arquivo" accept=".xlsx" hidden>
       </label>
     </div>
   </header>
 
-  <main>
+  <nav class="abas" id="abas" role="tablist" aria-label="Clientes"></nav>
+
+  <main id="conteudo">
     <p class="aviso" id="aviso" hidden></p>
-
-    <section class="kpis" id="kpis" aria-label="KPIs do mês"></section>
-
-    <section class="grade">
-      <article class="cartao">
-        <h2>Conversões acumuladas vs. ritmo da meta</h2>
-        <div class="legenda" id="legenda-ritmo"></div>
-        <div class="grafico" id="grafico-ritmo"></div>
-      </article>
-      <article class="cartao">
-        <h2>Investimento diário por plataforma</h2>
-        <div class="legenda" id="legenda-invest"></div>
-        <div class="grafico" id="grafico-invest"></div>
-      </article>
-    </section>
-
-    <section class="cartao">
-      <h2>Resumo por plataforma</h2>
-      <div class="tabela-wrap"><table id="tabela-plataformas"></table></div>
-    </section>
-
-    <section class="cartao">
-      <h2>Campanhas</h2>
-      <div class="tabela-wrap"><table id="tabela-campanhas"></table></div>
-    </section>
   </main>
 
-  <div class="tooltip" id="tooltip" role="status" hidden></div>
+  <script src="xlsx.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

@@ -1,0 +1,3 @@
+# Planilhas reais de clientes não vão para o repositório
+*.xlsx
+!data/exemplo.xlsx

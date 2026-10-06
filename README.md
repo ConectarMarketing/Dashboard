@@ -1,86 +1,69 @@
-# Dashboard de Mídia Paga + Metas
+# Controle de Mídia · Dashboard por cliente
 
-Dashboard com campanhas de **Google Ads**, **LinkedIn Ads** e **Meta Ads** e acompanhamento das **metas mensais** (KPIs).
+Dashboard que lê a planilha **Controle de mídia clientes (.xlsx)** e mostra:
 
-É um site estático (HTML + CSS + JavaScript puro, sem dependências): basta ter os dados em um CSV e as metas em um JSON.
+- **Visão geral**: todos os clientes numa tabela, com verba, gasto, % usado, restante, quanto gastar por dia e metas batidas.
+- **Uma aba por cliente** (uma aba para cada aba da planilha), com:
+  - verba mensal, gasto, restante, **quanto gastar por dia restante** e status do ritmo de gasto
+  - um bloco por plataforma (**Meta Ads, Google Ads, LinkedIn Ads**) com a verba (% da mensal), o gasto e a barra de uso da verba
+  - para cada métrica: verba, gasto, meta, resultado, **custo por resultado**, % da meta, status e projeção de fechamento do mês
+  - as anotações soltas da aba (textos, links)
 
-## O que ele mostra
+A marca vertical nas barras mostra **onde você deveria estar hoje** (dia atual ÷ dias do mês). O ponto colorido em cada aba mostra o status de gasto do cliente.
 
-- **KPIs do mês vs. meta**: Investimento, Conversões (leads), Receita, CPL e ROAS. Cada um tem
-  - % atingido e **projeção de fechamento do mês** (ritmo atual × dias do mês)
-  - status: ✓ no ritmo / ! atenção / ✕ abaixo da meta
-- **Conversões acumuladas vs. ritmo da meta** (linha tracejada = onde você deveria estar a cada dia)
-- **Investimento diário por plataforma**
-- **Tabelas** por plataforma e por campanha (CTR, CPC, taxa de conversão, CPL, ROAS) — clique no cabeçalho para ordenar
-- Filtro por **mês** e por **plataforma** (com metas por plataforma, se você definir)
+Não tem dependências: é HTML + CSS + JavaScript puro, e a planilha é lida no próprio navegador. **Os dados não são enviados para nenhum servidor.**
 
-## Como rodar
+## Como usar
 
 ```bash
 python3 -m http.server 8000
 # abra http://localhost:8000
 ```
 
-> Abrir o `index.html` direto (duplo clique) bloqueia a leitura dos arquivos pelo navegador. Nesse caso use o botão **Carregar CSV**.
+1. Clique em **Abrir planilha (.xlsx)** e escolha o seu controle do mês.
+2. O navegador lembra a última planilha aberta. Para atualizar, é só abrir a nova versão.
 
-Para publicar: GitHub Pages (Settings → Pages → branch), Netlify ou Vercel — qualquer hospedagem estática serve.
+Se você usa Google Sheets, baixe com *Arquivo → Fazer download → Microsoft Excel (.xlsx)*.
+Sem planilha aberta, o dashboard mostra `data/exemplo.xlsx` (clientes fictícios).
 
-## 1. Seus dados: `data/campanhas.csv`
+Para publicar e acessar de qualquer lugar: GitHub Pages, Netlify ou Vercel (site estático). Como cada pessoa abre a própria planilha, os dados dos clientes não ficam no site.
 
-Um registro **por dia × campanha**, no formato:
+## Formato da planilha
 
-| coluna | exemplo |
-|---|---|
-| `data` | `2026-10-01` (AAAA-MM-DD) |
-| `plataforma` | `Google Ads`, `LinkedIn Ads` ou `Meta Ads` |
-| `campanha` | `Search - Marca` |
-| `investimento` | `120.50` |
-| `impressoes` | `3400` |
-| `cliques` | `210` |
-| `conversoes` | `12` |
-| `receita` | `5400.00` (valor de conversão; use 0 se não tiver) |
+É o mesmo layout que você já usa. Cada aba é um cliente:
 
-Aceita separador `,` ou `;` e números no padrão brasileiro (`1.234,56`).
-O arquivo atual tem **dados fictícios** gerados por `scripts/gerar_dados_exemplo.py` — substitua pelos seus.
-
-### De onde tirar os dados de cada plataforma
-
-| Plataforma | Exportação manual | Automático (API) |
-|---|---|---|
-| Google Ads | Relatórios → Campanhas → segmentar por **Dia** → Download CSV | [Google Ads API](https://developers.google.com/google-ads/api/docs/start) (GAQL: `segments.date`, `metrics.cost_micros`, `metrics.conversions`, `metrics.conversions_value`) |
-| LinkedIn Ads | Campaign Manager → Analisar → Exportar (por dia) | [LinkedIn Marketing API – adAnalytics](https://learn.microsoft.com/linkedin/marketing/integrations/ads-reporting/ads-reporting) (`timeGranularity=DAILY`, `pivot=CAMPAIGN`) |
-| Meta Ads | Gerenciador de Anúncios → Relatórios → detalhamento por **Dia** → Exportar | [Marketing API – Insights](https://developers.facebook.com/docs/marketing-api/insights) (`level=campaign`, `time_increment=1`) |
-
-Caminhos para alimentar o CSV, do mais simples ao mais robusto:
-
-1. **Manual**: exporte das 3 plataformas, cole numa planilha com as colunas acima e salve como CSV (bom para começar).
-2. **Conector pronto** (Supermetrics, Windsor.ai, Funnel, Dataslayer etc.) jogando tudo numa Google Sheet; publique a aba como CSV e aponte o `fetch` em `app.js` para essa URL.
-3. **Script próprio** usando as APIs acima, rodando diariamente (ex.: GitHub Actions agendado) e gravando `data/campanhas.csv`.
-
-> Atenção à definição de "conversão": cada plataforma conta de um jeito (janela de atribuição, lead de formulário nativo vs. pixel). Padronize o que entra na coluna `conversoes`.
-
-## 2. Suas metas: `data/metas.json`
-
-```json
-{
-  "meses": {
-    "2026-10": {
-      "geral": { "investimento": 33000, "conversoes": 1000, "receita": 200000, "cpl": 33, "roas": 6 },
-      "plataformas": {
-        "Google Ads": { "investimento": 16500, "conversoes": 680, "cpl": 24 }
-      }
-    }
-  }
-}
+```
+A1  Nome do cliente
+    Geral
+    Dia atual | Último dia do mês | Dias restantes | Valor de mídia mensal | ...
+    06/10/2026 | 31/10/2026      | ...            | 3000
+    Meta                                   ← nome da plataforma: Meta, Google ou LinkedIn
+    % de mídia mensal | Valor de mídia mensal | ...
+    0,6               | ...
+    Métrica | Valor de mídia | Valor de mídia gasto | Meta | Resultado | Meta conquistada %
+    Seguidores | 600 | 140,50 | 400 | 120 | ...
+    Mensagens  | ...
+    Google
+    ...
 ```
 
-- `geral`: meta da soma das plataformas. `plataformas`: opcional, usado quando você filtra uma plataforma.
-- Pode omitir qualquer KPI — ele aparece como "Sem meta definida".
-- Como cada KPI é avaliado:
-  - **Investimento** → orçamento: verde se a projeção fica entre 90% e 105%
-  - **Conversões, Receita, ROAS** → mínimo: quanto mais, melhor
-  - **CPL** → máximo: não pode passar do limite
+Regras de leitura:
+- Os cabeçalhos **"Dia atual"** e **"Métrica"** marcam os blocos. Você pode adicionar quantos clientes, plataformas e métricas quiser.
+- Uma plataforma é a linha com o nome dela, seguida de "% de mídia mensal". Um bloco "Métrica" sem o "% de mídia" acima aparece como **Outros indicadores**. Use isso para KPIs que não têm verba (ex.: engajamento do Sprinklr, membros do WhatsApp, acessos totais do site).
+- Uma métrica com meta vazia ou 0 aparece como "Sem meta".
+- As linhas da legenda de cores são ignoradas. Qualquer outro texto solto vira "Anotações".
+- Só os valores digitados são usados. **Os totais são recalculados pelo dashboard** (não usam as fórmulas da planilha), e o valor diário usa os dias reais do mês, em vez de 30,4.
 
-## 3. Adicionar outros KPIs
+## Como os status são calculados
 
-Em `app.js`, inclua o KPI na lista `KPIS` (por exemplo `{ id: "cpc", nome: "CPC", formato: "moeda2", tipo: "maximo", acumula: false }`) e a meta correspondente em `metas.json`. Métricas derivadas (CTR, CPC, CPL, ROAS) são calculadas na função `somar()`; se precisar de uma coluna nova (ex.: `mqls`, `vendas`), adicione-a no CSV, em `lerCSV()` e em `somar()`.
+| Item | Regra |
+|---|---|
+| Gasto (cliente e plataforma) | compara o gasto com o ideal até hoje (verba × dia/dias do mês): entre 90% e 105% = no ritmo; acima = gastando acima; abaixo = gastando abaixo. No fim do mês: verba utilizada / estourada / não utilizada |
+| Métrica | ≥ 100% da meta = batida. Durante o mês: projeção (resultado ÷ % do mês decorrido) ≥ 100% = no ritmo, ≥ 90% = atenção, abaixo disso = abaixo do ritmo |
+| Gastar por dia restante | (verba − gasto) ÷ (último dia − dia atual) |
+
+## Arquivos
+
+- `index.html`, `styles.css`, `app.js`: a interface e os cálculos
+- `xlsx.js`: o leitor de .xlsx (sem bibliotecas) e a interpretação do layout
+- `data/exemplo.xlsx`: a planilha fictícia, gerada por `scripts/gerar_planilha_exemplo.py`
